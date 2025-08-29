@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  COMMERCIAL
+}
+
+enum Status {
+  FOR_SALE
+  FOR_RENT
+  SOLD
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  avatar   String?
+  role      String   @default("USER") // Add role field if you need admin logic
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agent {
+  id           String    @id @default(cuid())
+  name         String
+  role         String?
+  email        String    @unique
+  phone        String?
+  photoUrl     String?
+  rating       Float     @default(0)
+  facebookUrl  String?
+  twitterUrl   String?
+  linkedInUrl  String?
+  properties   Property[]
+  inquiries    Inquiry[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([name])
+  @@index([email])
+}
+
+model Property {
+  id           String       @id @default(cuid())
+  title        String
+  slug         String       @unique
+  description  String?
+  location     String
+  address      String
+  city         String
+  state        String
+  zipCode      String
+  price        Decimal
+  bedrooms     Int          @default(0)
+  bathrooms    Int          @default(0)
+  areaSqft     Int          @default(0)
+  propertyType PropertyType
+  status       Status       @default(FOR_SALE)
+  mainImage    String?
+  images       String[]
+  agent        Agent?       @relation(fields: [agentId], references: [id])
+  agentId      String?
+  inquiries    Inquiry[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([title])
+  @@index([city])
+  @@index([state])
+  @@index([bedrooms, bathrooms])
+  @@index([createdAt])
+  @@index([price])
+  @@index([propertyType])
+  @@index([status])
+}
+
+model Inquiry {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  message    String?
+  property   Property @relation(fields: [propertyId], references: [id])
+  propertyId String
+  agent      Agent    @relation(fields: [agentId], references: [id])
+  agentId    String
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
+  @@index([agentId])
+  @@index([createdAt])
+}

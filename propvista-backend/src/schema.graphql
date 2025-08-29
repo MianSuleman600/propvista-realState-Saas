@@ -1,0 +1,176 @@
+# D:\MERN\propvista\propvista-backend\src\schema.graphql
+scalar DateTime
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  COMMERCIAL
+}
+
+enum Status {
+  FOR_SALE
+  FOR_RENT
+  SOLD
+}
+
+type PageInfo {
+  total: Int!
+  page: Int!
+  pageSize: Int!
+  hasNextPage: Boolean!
+}
+
+type User {
+  id: ID!
+  email: String!
+  username: String!
+  role: String!
+  avatar: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Agent {
+  id: ID!
+  name: String!
+  role: String
+  phone: String
+  email: String!
+  photoUrl: String
+  rating: Float!
+  facebook: String
+  linkedin: String
+  twitter: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  properties: [Property!]!
+}
+
+type Property {
+  id: ID!
+  title: String!
+  slug: String!
+  description: String
+  location: String!
+  price: Float!
+  bedrooms: Int!
+  bathrooms: Int!
+  areaSqft: Int!
+  propertyType: PropertyType!
+  status: Status!
+  mainImage: String
+  createdAt: DateTime!
+  agent: Agent
+}
+
+type PropertyConnection {
+  nodes: [Property!]!
+  pageInfo: PageInfo!
+}
+
+type Inquiry {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String
+  message: String!
+  createdAt: DateTime!
+  property: Property
+  agent: Agent
+}
+
+input PropertyFilter {
+  q: String
+  location: String
+  propertyType: PropertyType
+  status: Status
+  minPrice: Float
+  maxPrice: Float
+  minBedrooms: Int
+  minBathrooms: Int
+}
+
+input PropertyInput {
+  title: String!
+  description: String
+  location: String!
+  price: Float!
+  bedrooms: Int!
+  bathrooms: Int!
+  areaSqft: Int!
+  propertyType: PropertyType!
+  status: Status!
+  mainImage: String
+  agentId: ID
+}
+
+input SignupInput {
+  email: String!
+  username: String!
+  password: String!
+}
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+input AgentInput {
+  name: String!
+  role: String
+  phone: String
+  email: String!
+  photoUrl: String
+  rating: Float
+  facebook: String
+  linkedin: String
+  twitter: String
+}
+
+input InquiryInput {
+  name: String!
+  email: String!
+  phone: String
+  message: String!
+  propertyId: ID
+  agentId: ID
+}
+
+type LogoutPayload {
+  success: Boolean!
+}
+
+type Query {
+  me: User
+  property(id: ID, slug: String): Property
+  properties(
+    page: Int = 1
+    pageSize: Int = 12
+    orderBy: String = "-createdAt"
+    filter: PropertyFilter
+  ): PropertyConnection!
+  agents(q: String, page: Int = 1, pageSize: Int = 20): [Agent!]!
+  agent(id: ID!): Agent
+}
+
+type Mutation {
+  signup(input: SignupInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  logout: LogoutPayload!
+
+  createAgent(input: AgentInput!): Agent!
+  updateAgent(id: ID!, input: AgentInput!): Agent!
+  deleteAgent(id: ID!): Boolean!
+
+  createProperty(input: PropertyInput!): Property!
+  updateProperty(id: ID!, input: PropertyInput!): Property!
+  deleteProperty(id: ID!): Boolean!
+
+  createInquiry(input: InquiryInput!): Inquiry!
+}
